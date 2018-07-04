@@ -22,7 +22,6 @@ import com.netflix.hystrix.metric.HystrixEventStream;
 import org.HdrHistogram.Histogram;
 import rx.Observable;
 import rx.Subscription;
-import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.functions.Func2;
 import rx.subjects.BehaviorSubject;
@@ -49,6 +48,7 @@ public class RollingDistributionStream<Event extends HystrixEvent> {
     private final BehaviorSubject<CachedValuesHistogram> rollingDistribution = BehaviorSubject.create(CachedValuesHistogram.backedBy(CachedValuesHistogram.getNewHistogram()));
     private final Observable<CachedValuesHistogram> rollingDistributionStream;
 
+    // Histogram(直方图)累加
     private static final Func2<Histogram, Histogram, Histogram> distributionAggregator = new Func2<Histogram, Histogram, Histogram>() {
         @Override
         public Histogram call(Histogram initialDistribution, Histogram distributionToAdd) {
@@ -57,6 +57,8 @@ public class RollingDistributionStream<Event extends HystrixEvent> {
         }
     };
 
+    // Reduce操作符应用一个函数接收Observable发射的数据和函数的计算结果作为下次计算的参数，输出最后的结果
+    // 迭代累加Histogram(直方图)
     private static final Func1<Observable<Histogram>, Observable<Histogram>> reduceWindowToSingleDistribution = new Func1<Observable<Histogram>, Observable<Histogram>>() {
         @Override
         public Observable<Histogram> call(Observable<Histogram> window) {
@@ -64,6 +66,7 @@ public class RollingDistributionStream<Event extends HystrixEvent> {
         }
     };
 
+    // 根据当前Histogram获取CachedValues（getMean，getValueAtPercentile)
     private static final Func1<Histogram, CachedValuesHistogram> cacheHistogramValues = new Func1<Histogram, CachedValuesHistogram>() {
         @Override
         public CachedValuesHistogram call(Histogram histogram) {
@@ -71,6 +74,7 @@ public class RollingDistributionStream<Event extends HystrixEvent> {
         }
     };
 
+    // Observable<T> 转换成 Observable<List<T>>
     private static final Func1<Observable<CachedValuesHistogram>, Observable<List<CachedValuesHistogram>>> convertToList =
             new Func1<Observable<CachedValuesHistogram>, Observable<List<CachedValuesHistogram>>>() {
                 @Override
@@ -79,6 +83,13 @@ public class RollingDistributionStream<Event extends HystrixEvent> {
                 }
             };
 
+    /**
+     *
+     * @param stream
+     * @param numBuckets 统计周期内bucket个数
+     * @param bucketSizeInMs 统计周期内每个bucket时长
+     * @param addValuesToBucket 将event事件统计入Histogram
+     */
     protected RollingDistributionStream(final HystrixEventStream<Event> stream, final int numBuckets, final int bucketSizeInMs,
                                         final Func2<Histogram, Event, Histogram> addValuesToBucket) {
         final List<Histogram> emptyDistributionsToStart = new ArrayList<Histogram>();
@@ -93,6 +104,9 @@ public class RollingDistributionStream<Event extends HystrixEvent> {
             }
         };
 
+        // window 每间隔bucketSizeInMs毫秒，生成一个Observable
+        // flatMap 将第一步window按时间分隔的结果聚合成一个Observable<Histograms>
+        // startWith 在开始插入n个初始化的Histogram
         rollingDistributionStream = stream
                 .observe()
                 .window(bucketSizeInMs, TimeUnit.MILLISECONDS) //stream of unaggregated buckets

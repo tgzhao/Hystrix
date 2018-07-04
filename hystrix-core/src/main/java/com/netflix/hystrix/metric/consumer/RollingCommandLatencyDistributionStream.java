@@ -49,6 +49,7 @@ import java.util.concurrent.ConcurrentMap;
 public class RollingCommandLatencyDistributionStream extends RollingDistributionStream<HystrixCommandCompletion> {
     private static final ConcurrentMap<String, RollingCommandLatencyDistributionStream> streams = new ConcurrentHashMap<String, RollingCommandLatencyDistributionStream>();
 
+    // Histogram(直方图)中记录一次command的time spent in run() method
     private static final Func2<Histogram, HystrixCommandCompletion, Histogram> addValuesToBucket = new Func2<Histogram, HystrixCommandCompletion, Histogram>() {
         @Override
         public Histogram call(Histogram initialDistribution, HystrixCommandCompletion event) {
@@ -60,9 +61,9 @@ public class RollingCommandLatencyDistributionStream extends RollingDistribution
     };
 
     public static RollingCommandLatencyDistributionStream getInstance(HystrixCommandKey commandKey, HystrixCommandProperties properties) {
-        final int percentileMetricWindow = properties.metricsRollingPercentileWindowInMilliseconds().get();
-        final int numPercentileBuckets = properties.metricsRollingPercentileWindowBuckets().get();
-        final int percentileBucketSizeInMs = percentileMetricWindow / numPercentileBuckets;
+        final int percentileMetricWindow = properties.metricsRollingPercentileWindowInMilliseconds().get(); // 统计周期
+        final int numPercentileBuckets = properties.metricsRollingPercentileWindowBuckets().get(); // 统计周期分多少bucket
+        final int percentileBucketSizeInMs = percentileMetricWindow / numPercentileBuckets; // 周期内每个bucket时长
 
         return getInstance(commandKey, numPercentileBuckets, percentileBucketSizeInMs);
     }

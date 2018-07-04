@@ -57,7 +57,10 @@ public class HystrixCommandCompletionStream implements HystrixEventStream<Hystri
     HystrixCommandCompletionStream(final HystrixCommandKey commandKey) {
         this.commandKey = commandKey;
 
+        // PublishSubject--只发送订阅开始及以后的
+        // SerializedSubject-- 线程安全的wrap
         this.writeOnlySubject = new SerializedSubject<HystrixCommandCompletion, HystrixCommandCompletion>(PublishSubject.<HystrixCommandCompletion>create());
+        // share之后，只有主动读才会发射
         this.readOnlyStream = writeOnlySubject.share();
     }
 

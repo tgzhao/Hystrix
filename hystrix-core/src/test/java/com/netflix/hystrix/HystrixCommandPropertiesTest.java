@@ -36,13 +36,13 @@ public class HystrixCommandPropertiesTest {
                 .withExecutionTimeoutEnabled(true)
                 .withExecutionIsolationStrategy(ExecutionIsolationStrategy.THREAD) // we want thread execution by default in tests
                 .withExecutionIsolationThreadInterruptOnTimeout(true)
-                .withExecutionIsolationThreadInterruptOnFutureCancel(true)
+                .withExecutionIsolationThreadInterruptOnFutureCancel(true) //thread策略下，执行线程是否中断，当future is cancelled，或observable is unsubscribed时
                 .withCircuitBreakerForceOpen(false) // we don't want short-circuiting by default
                 .withCircuitBreakerErrorThresholdPercentage(40) // % of 'marks' that must be failed to trip the circuit
                 .withMetricsRollingStatisticalWindowInMilliseconds(5000)// milliseconds back that will be tracked
-                .withMetricsRollingStatisticalWindowBuckets(5) // buckets
-                .withCircuitBreakerRequestVolumeThreshold(0) // in testing we will not have a threshold unless we're specifically testing that feature
-                .withCircuitBreakerSleepWindowInMilliseconds(5000000) // milliseconds after tripping circuit before allowing retry (by default set VERY long as we want it to effectively never allow a singleTest for most unit tests)
+                .withMetricsRollingStatisticalWindowBuckets(5) // buckets 统计区间5s，分成5个子窗口
+                .withCircuitBreakerRequestVolumeThreshold(0) // 统计区间，请求数达到这个值才会触发hystrix in testing we will not have a threshold unless we're specifically testing that feature
+                .withCircuitBreakerSleepWindowInMilliseconds(5000000) // 被熔断后，间隔多久进行尝试请求 milliseconds after tripping circuit before allowing retry (by default set VERY long as we want it to effectively never allow a singleTest for most unit tests)
                 .withCircuitBreakerEnabled(true)
                 .withRequestLogEnabled(true)
                 .withExecutionIsolationSemaphoreMaxConcurrentRequests(20)

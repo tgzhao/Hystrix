@@ -462,6 +462,7 @@ import java.util.concurrent.atomic.AtomicReference;
                     throw new HystrixRuntimeException(FailureType.BAD_REQUEST_EXCEPTION, _cmd.getClass(), getLogMessagePrefix() + " command executed multiple times - this is not permitted.", ex, null);
                 }
 
+                // 命令开始时间戳
                 commandStartTimestamp = System.currentTimeMillis();
 
                 if (properties.requestLogEnabled().get()) {
@@ -483,6 +484,7 @@ import java.util.concurrent.atomic.AtomicReference;
                     }
                 }
 
+                // 获得 执行命令Observable
                 Observable<R> hystrixObservable =
                         Observable.defer(applyHystrixSemantics)
                                 .map(wrapWithAllOnNextHooks);

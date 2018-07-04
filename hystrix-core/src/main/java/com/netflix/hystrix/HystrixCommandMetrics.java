@@ -28,7 +28,6 @@ import com.netflix.hystrix.strategy.eventnotifier.HystrixEventNotifier;
 import com.netflix.hystrix.util.HystrixRollingNumberEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rx.functions.Func0;
 import rx.functions.Func2;
 
 import java.util.Collection;
@@ -38,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Used by {@link HystrixCommand} to record metrics.
+ * 熔断各项事件指标数据
  */
 public class HystrixCommandMetrics extends HystrixMetrics {
 
@@ -46,6 +46,7 @@ public class HystrixCommandMetrics extends HystrixMetrics {
 
     private static final HystrixEventType[] ALL_EVENT_TYPES = HystrixEventType.values();
 
+    // 根据事件类型将CommandCompletion中指标数据添加到bucket中
     public static final Func2<long[], HystrixCommandCompletion, long[]> appendEventToBucket = new Func2<long[], HystrixCommandCompletion, long[]>() {
         @Override
         public long[] call(long[] initialCountArray, HystrixCommandCompletion execution) {
@@ -62,6 +63,7 @@ public class HystrixCommandMetrics extends HystrixMetrics {
         }
     };
 
+    // arg1 arg2根据事件类型累加--多个bucket数据叠加
     public static final Func2<long[], long[], long[]> bucketAggregator = new Func2<long[], long[], long[]>() {
         @Override
         public long[] call(long[] cumulativeEvents, long[] bucketEventCounts) {

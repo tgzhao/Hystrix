@@ -41,8 +41,10 @@ public abstract class BucketedCounterStream<Event extends HystrixEvent, Bucket, 
     protected final Observable<Bucket> bucketedStream;
     protected final AtomicReference<Subscription> subscription = new AtomicReference<Subscription>(null);
 
+    // 叠加bucket
     private final Func1<Observable<Event>, Observable<Bucket>> reduceBucketToSummary;
 
+    // BehaviorSubject只发送订阅最近一次，及订阅后的
     private final BehaviorSubject<Output> counterSubject = BehaviorSubject.create(getEmptyOutputValue());
 
     protected BucketedCounterStream(final HystrixEventStream<Event> inputEventStream, final int numBuckets, final int bucketSizeInMs,
@@ -55,11 +57,14 @@ public abstract class BucketedCounterStream<Event extends HystrixEvent, Bucket, 
             }
         };
 
+        // List<long[]> 多少个bucket对应多少个long[]
         final List<Bucket> emptyEventCountsToStart = new ArrayList<Bucket>();
         for (int i = 0; i < numBuckets; i++) {
             emptyEventCountsToStart.add(getEmptyBucketSummary());
         }
 
+        // defer--最终的Observable是defer里面的factory call生成的
+        // inputEventStream--Observable<HystrixCommandCompletion> readOnlyStream
         this.bucketedStream = Observable.defer(new Func0<Observable<Bucket>>() {
             @Override
             public Observable<Bucket> call() {

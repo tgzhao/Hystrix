@@ -362,10 +362,17 @@ public class HystrixRollingNumber {
 
     /**
      * Counters for a given 'bucket' of time.
+     * 时间块计数器-默认10个bucket
      */
     /* package */static class Bucket {
         final long windowStart;
+        /**
+         * 根据不同Event类型计数
+         */
         final LongAdder[] adderForCounterType;
+        /**
+         * THREAD_MAX_ACTIVE counter
+         */
         final LongMaxUpdater[] updaterForCounterType;
 
         Bucket(long startTime) {
