@@ -65,6 +65,8 @@ public abstract class BucketedCounterStream<Event extends HystrixEvent, Bucket, 
 
         // defer--最终的Observable是defer里面的factory call生成的
         // inputEventStream--Observable<HystrixCommandCompletion> readOnlyStream
+        // window--没个bucket发射一次
+        // flatMap--计算一个bucket不同事件的counts
         this.bucketedStream = Observable.defer(new Func0<Observable<Bucket>>() {
             @Override
             public Observable<Bucket> call() {
