@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Abstract class that imposes a bucketing structure and provides streams of buckets
+ * 将event stream按照bucket输出新的stream Observable，供其它stream注册监听
  *
  * @param <Event> type of raw data that needs to get summarized into a bucket
  * @param <Bucket> type of data contained in each bucket

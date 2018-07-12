@@ -91,6 +91,7 @@ public class RollingCommandEventCounterStream extends BucketedRollingCounterStre
         return new long[NUM_EVENT_TYPES];
     }
 
+    // 获取最近一个统计周期的数据 t1 = b buckets * every t2 (=t1/b) milliseconds
     public long getLatest(HystrixEventType eventType) {
         return getLatest()[eventType.ordinal()];
     }

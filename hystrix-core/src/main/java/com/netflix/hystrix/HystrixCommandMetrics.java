@@ -69,7 +69,7 @@ public class HystrixCommandMetrics extends HystrixMetrics {
         public long[] call(long[] cumulativeEvents, long[] bucketEventCounts) {
             for (HystrixEventType eventType: ALL_EVENT_TYPES) {
                 switch (eventType) {
-                    case EXCEPTION_THROWN:
+                    case EXCEPTION_THROWN: // producing
                         for (HystrixEventType exceptionEventType: HystrixEventType.EXCEPTION_PRODUCING_EVENT_TYPES) {
                             cumulativeEvents[eventType.ordinal()] += bucketEventCounts[exceptionEventType.ordinal()];
                         }

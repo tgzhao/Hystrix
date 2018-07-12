@@ -53,10 +53,12 @@ public class HealthCountsStream extends BucketedRollingCounterStream<HystrixComm
 
 
     public static HealthCountsStream getInstance(HystrixCommandKey commandKey, HystrixCommandProperties properties) {
+        // 两次快照时间间隔 default=500
         final int healthCountBucketSizeInMs = properties.metricsHealthSnapshotIntervalInMilliseconds().get();
         if (healthCountBucketSizeInMs == 0) {
             throw new RuntimeException("You have set the bucket size to 0ms.  Please set a positive number, so that the metric stream can be properly consumed");
         }
+        // rollingwindow default=10000  10000/500=20
         final int numHealthCountBuckets = properties.metricsRollingStatisticalWindowInMilliseconds().get() / healthCountBucketSizeInMs;
 
         return getInstance(commandKey, numHealthCountBuckets, healthCountBucketSizeInMs);

@@ -45,6 +45,9 @@ public abstract class BucketedRollingCounterStream<Event extends HystrixEvent, B
                 return window.scan(getEmptyOutputValue(), reduceBucket).skip(numBuckets);
             }
         };
+        // bucketedStream 将数据每隔bucketSizeInMs(100ms)累加成一个数据
+        // sourceStream 将bucketedStream输出的累加数据流，每次累加numBuckets(10个)个，间隔1个
+        // 示例：msg=msg48:msg49:msg50:msg51 next: msg=msg49:msg50:msg51:msg52
         this.sourceStream = bucketedStream      //stream broken up into buckets
                 .window(numBuckets, 1)          //emit overlapping windows of buckets
                 .flatMap(reduceWindowToSummary) //convert a window of bucket-summaries into a single summary
