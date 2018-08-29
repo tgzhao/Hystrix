@@ -134,6 +134,7 @@ abstract class Striped64 extends Number {
      * Holder for the thread-local hash code. The code is initially
      * random, but may be set to a different value upon collisions.
      */
+    //每个HashCode在初始化时会产生并保存一个非0的随机数
     static final class HashCode {
         static final Random rng = new Random();
         int code;
@@ -186,6 +187,7 @@ abstract class Striped64 extends Number {
     /**
      * CASes the base field.
      */
+    //尝试使用casBase对value值进行update，baseOffset是value相对于LongAdder对象初始位置的内存偏移量
     final boolean casBase(long cmp, long val) {
         return UNSAFE.compareAndSwapLong(this, baseOffset, cmp, val);
     }

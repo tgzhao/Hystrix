@@ -79,9 +79,14 @@ public class LongAdder extends Striped64 implements Serializable {
         if ((as = cells) != null || !casBase(b = base, b + x)) {
             boolean uncontended = true;
             int h = (hc = threadHashCode.get()).code;
+            //此处有多个判断条件，依次是
+            //1.cell[]数组还未初始化
+            //2.cell[]数组虽然初始化了但是数组长度为0
+            //3.该线程所对应的cell为null，其中要注意的是，当n为2的n次幂时，（(n - 1) & h）等效于h%n
+            //4.尝试对该线程对应的cell单元进行cas更新（加上x)
             if (as == null || (n = as.length) < 1 ||
-                (a = as[(n - 1) & h]) == null ||
-                !(uncontended = a.cas(v = a.value, v + x)))
+                    (a = as[(n - 1) & h]) == null ||
+                    !(uncontended = a.cas(v = a.value, v + x)))
                 retryUpdate(x, hc, uncontended);
         }
     }

@@ -15,17 +15,17 @@
  */
 package com.netflix.hystrix;
 
-import static com.netflix.hystrix.strategy.properties.HystrixPropertiesChainedProperty.forBoolean;
-import static com.netflix.hystrix.strategy.properties.HystrixPropertiesChainedProperty.forInteger;
+import com.netflix.hystrix.strategy.concurrency.HystrixConcurrencyStrategy;
+import com.netflix.hystrix.strategy.properties.HystrixPropertiesStrategy;
+import com.netflix.hystrix.strategy.properties.HystrixProperty;
+import com.netflix.hystrix.util.HystrixRollingNumber;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.netflix.hystrix.strategy.concurrency.HystrixConcurrencyStrategy;
-import com.netflix.hystrix.strategy.properties.HystrixPropertiesStrategy;
-import com.netflix.hystrix.strategy.properties.HystrixProperty;
-import com.netflix.hystrix.util.HystrixRollingNumber;
+import static com.netflix.hystrix.strategy.properties.HystrixPropertiesChainedProperty.forBoolean;
+import static com.netflix.hystrix.strategy.properties.HystrixPropertiesChainedProperty.forInteger;
 
 /**
  * Properties for instances of {@link HystrixThreadPool}.
@@ -51,10 +51,12 @@ public abstract class HystrixThreadPoolProperties {
     static int default_keepAliveTimeMinutes = 1; // minutes to keep a thread alive
     static int default_maxQueueSize = -1;        // size of queue (this can't be dynamically changed so we use 'queueSizeRejectionThreshold' to artificially limit and reject)
                                                  // -1 turns it off and makes us use SynchronousQueue
+                                                 // 无法动态调整，如需动态调整可使用queueSizeRejectionThreshold
     static boolean default_allow_maximum_size_to_diverge_from_core_size = false; //should the maximumSize config value get read and used in configuring the threadPool
                                                                                  //turning this on should be a conscious decision by the user, so we default it to false
+                                                                                 //允许最大尺寸偏离核心尺寸
 
-    static int default_queueSizeRejectionThreshold = 5; // number of items in queue
+    static int default_queueSizeRejectionThreshold = 5; // number of items in queue 可动态调整
     static int default_threadPoolRollingNumberStatisticalWindow = 10000; // milliseconds for rolling number
     static int default_threadPoolRollingNumberStatisticalWindowBuckets = 10; // number of buckets in rolling number (10 1-second buckets)
 

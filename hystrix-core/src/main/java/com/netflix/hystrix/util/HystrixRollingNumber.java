@@ -15,6 +15,8 @@
  */
 package com.netflix.hystrix.util;
 
+import com.netflix.hystrix.strategy.properties.HystrixProperty;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,11 +24,6 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.netflix.hystrix.strategy.properties.HystrixProperty;
 
 /**
  * A number which can be used to track counters (increment) or set values over time.
@@ -362,9 +359,12 @@ public class HystrixRollingNumber {
 
     /**
      * Counters for a given 'bucket' of time.
-     * 时间块计数器-默认10个bucket
+     * 时间块计数器-当前bucket（时间段，hystrix中默认1s）
      */
     /* package */static class Bucket {
+        /**
+         * 当前计时块 开始时间
+         */
         final long windowStart;
         /**
          * 根据不同Event类型计数
@@ -430,6 +430,7 @@ public class HystrixRollingNumber {
     }
 
     /**
+     * 累加计数
      * Cumulative counters (from start of JVM) from each Type
      */
     /* package */static class CumulativeSum {
@@ -502,6 +503,7 @@ public class HystrixRollingNumber {
 
     /**
      * This is a circular array acting as a FIFO queue.
+     * 环状先进先出队列
      * <p>
      * It purposefully does NOT implement Deque or some other Collection interface as it only implements functionality necessary for this RollingNumber use case.
      * <p>
@@ -513,6 +515,7 @@ public class HystrixRollingNumber {
      */
     /* package */static class BucketCircularArray implements Iterable<Bucket> {
         private final AtomicReference<ListState> state;
+        // dataLength = numBuckets + 1
         private final int dataLength; // we don't resize, we always stay the same, so remember this
         private final int numBuckets;
 
@@ -568,9 +571,11 @@ public class HystrixRollingNumber {
             private ListState incrementTail() {
                 /* if incrementing results in growing larger than 'length' which is the max we should be at, then also increment head (equivalent of removeFirst but done atomically) */
                 if (size == numBuckets) {
+                    // 总数已满时，head和tail同时向后移动一位（注意和总长度取余）
                     // increment tail and head
                     return new ListState(data, (head + 1) % dataLength, (tail + 1) % dataLength);
                 } else {
+                    // 总数小于numBuckets时，head不变，tail往后移动一位
                     // increment only tail
                     return new ListState(data, head, (tail + 1) % dataLength);
                 }
